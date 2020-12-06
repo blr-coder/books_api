@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var db *gorm.DB
+var DB *gorm.DB
 
 func ConnectDatabase() {
 	dbUser := os.Getenv("DB_USER")
@@ -25,5 +25,5 @@ func ConnectDatabase() {
 		fmt.Print(err)
 	}
 
-	db = conn
+	DB = conn
 }
