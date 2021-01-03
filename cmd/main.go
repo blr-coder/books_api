@@ -22,6 +22,9 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"data": "pong!"})
 	})
 
+	// Auth
+	router.GET("/test_generate_jwt", controllers.Authenticate)
+
 	// Books
 	router.POST("/books", controllers.CreateBook)
 	router.GET("/books", controllers.AllBooks)
