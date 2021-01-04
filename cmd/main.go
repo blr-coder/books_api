@@ -9,21 +9,24 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/blr-coder/books_api/controllers"
-	"github.com/blr-coder/books_api/models"
+	"github.com/blr-coder/books_api/database"
 )
 
 func main() {
 	router := gin.Default()
 
-	models.ConnectDatabase()
+	database.ConnectDatabase()
 
 	// Test route
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"data": "pong!"})
 	})
 
+	// Users
+	router.POST("/register", controllers.RegisterUser)
+
 	// Auth
-	router.GET("/test_generate_jwt", controllers.Authenticate)
+	router.POST("/auth", controllers.Authenticate)
 
 	// Books
 	router.POST("/books", controllers.CreateBook)
