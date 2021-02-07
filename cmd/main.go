@@ -27,6 +27,7 @@ func main() {
 
 	// Auth
 	router.POST("/auth", controllers.Authenticate)
+	router.POST("/test_token_parse", controllers.Parse)
 
 	// Books
 	router.POST("/books", controllers.CreateBook)

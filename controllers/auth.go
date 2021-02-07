@@ -16,6 +16,10 @@ type authInput struct {
 	Password string `json:"password"`
 }
 
+type testParseInput struct {
+	Token    string `json:"token"`
+}
+
 func Authenticate(ctx *gin.Context) {
 	logrus.Info("Auth")
 
@@ -41,4 +45,24 @@ func Authenticate(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"token": jwtToken})
+}
+
+func Parse(ctx *gin.Context)  {
+	logrus.Info("Parse")
+
+	var input testParseInput
+
+	if err := ctx.Bind(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input!"})
+		return
+	}
+
+	testData, err := auth.ParseJWT(input.Token, []byte(auth.SigningKey))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Some error"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"data": testData})
+
 }
