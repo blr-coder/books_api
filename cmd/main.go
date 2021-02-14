@@ -8,12 +8,13 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/blr-coder/books_api/controllers"
+	"github.com/blr-coder/books_api/auth"
 	"github.com/blr-coder/books_api/database"
+	"github.com/blr-coder/books_api/handlers"
 )
 
 func main() {
-	router := gin.Default()
+	router := gin.New()
 
 	database.ConnectDatabase()
 
@@ -23,18 +24,22 @@ func main() {
 	})
 
 	// Users
-	router.POST("/register", controllers.RegisterUser)
+	router.POST("/register", handlers.RegisterUser)
 
 	// Auth
-	router.POST("/auth", controllers.Authenticate)
-	router.POST("/test_token_parse", controllers.Parse)
+	router.POST("/auth", handlers.Authenticate)
+	router.POST("/test_token_parse", handlers.Parse)
 
-	// Books
-	router.POST("/books", controllers.CreateBook)
-	router.GET("/books", controllers.AllBooks)
-	router.GET("/books/:id", controllers.GetBook)
+	// Books api
+	booksAPI := router.Group("/api", auth.Middleware)
+	{
+		booksAPI.POST("/books", auth.Middleware, handlers.CreateBook)
+		// router.POST("/books", handlers.CreateBook)
+		booksAPI.GET("/books", handlers.AllBooks)
+		booksAPI.GET("/books/:id", handlers.GetBook)
 
-	router.DELETE("/books/:id", controllers.DeleteBook)
+		booksAPI.DELETE("/books/:id", handlers.DeleteBook)
+	}
 
 	err := router.Run(os.Getenv("APP_HOST") + ":" + os.Getenv("APP_PORT"))
 	if err != nil {

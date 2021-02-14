@@ -1,4 +1,4 @@
-package controllers
+package handlers
 
 import (
 	"net/http"
@@ -57,12 +57,12 @@ func Parse(ctx *gin.Context)  {
 		return
 	}
 
-	testData, err := auth.ParseJWT(input.Token, []byte(auth.SigningKey))
+	claims, err := auth.ParseJWT(input.Token, []byte(auth.SigningKey))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Some error"})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"data": testData})
+	ctx.JSON(http.StatusOK, gin.H{"claims": claims})
 
 }
