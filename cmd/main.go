@@ -33,11 +33,10 @@ func main() {
 	// Books api
 	booksAPI := router.Group("/api", auth.Middleware)
 	{
-		booksAPI.POST("/books", auth.Middleware, handlers.CreateBook)
-		// router.POST("/books", handlers.CreateBook)
+		booksAPI.POST("/books", handlers.CreateBook)
 		booksAPI.GET("/books", handlers.AllBooks)
 		booksAPI.GET("/books/:id", handlers.GetBook)
-
+		booksAPI.PATCH("/books/:id", handlers.UpdateBook)
 		booksAPI.DELETE("/books/:id", handlers.DeleteBook)
 	}
 

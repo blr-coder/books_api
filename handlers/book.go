@@ -10,16 +10,22 @@ import (
 	"github.com/blr-coder/books_api/models"
 )
 
+type BookInput struct {
+	Title  string `json:"title"`
+	Author string `json:"author"`
+}
+
 func CreateBook(ctx *gin.Context) {
 	logrus.Info("CreateBook")
-	var book models.Book
-	if err := ctx.ShouldBindJSON(&book); err != nil {
+	// Validate input
+	var input BookInput
+	if err := ctx.ShouldBindJSON(&input); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	// Create book
-	book = models.Book{Title: book.Title, Author: book.Author}
+	book := models.Book{Title: input.Title, Author: input.Author}
 	database.DB.Create(&book)
 
 	ctx.JSON(http.StatusOK, gin.H{"data": book})
@@ -44,6 +50,32 @@ func GetBook(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"data": book})
+}
+
+func UpdateBook(ctx *gin.Context) {
+	logrus.Info("UpdateBook")
+	var book models.Book
+	err := database.DB.Where("id = ?", ctx.Param("id")).First(&book).Error
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Book not found!"})
+		return
+	}
+
+	// Validate input
+	var input BookInput
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	logrus.Info("Validate OK")
+
+	book.Title = input.Title
+	book.Author = input.Author
+
+	database.DB.Updates(&book)
+
+	ctx.JSON(http.StatusOK, gin.H{"data": book})
+
 }
 
 func DeleteBook(ctx *gin.Context) {

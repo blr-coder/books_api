@@ -1,2 +1,2 @@
 # books_api
-test golang progect
+test golang project for studying
