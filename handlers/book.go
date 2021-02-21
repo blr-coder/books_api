@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
+	"unicode/utf8"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -10,16 +12,42 @@ import (
 	"github.com/blr-coder/books_api/models"
 )
 
-type BookInput struct {
+type createBookInput struct {
+	Title  string `json:"title"`
+	Author string `json:"author"`
+
+	/*Title  string `json:"title" binding:"required"`
+	Author string `json:"author" binding:"required"`*/
+}
+
+type updateBookInput struct {
 	Title  string `json:"title"`
 	Author string `json:"author"`
 }
 
+func (i createBookInput) Validate() error {
+	if i.Author == "" || i.Title == "" {
+		return errors.New("all fields are required")
+	}
+
+	if utf8.RuneCountInString(i.Title) > 256 || utf8.RuneCountInString(i.Author) > 256 {
+		return errors.New("the number of letters cannot be more than 256")
+	}
+
+	return nil
+}
+
 func CreateBook(ctx *gin.Context) {
 	logrus.Info("CreateBook")
-	// Validate input
-	var input BookInput
+
+	var input createBookInput
 	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := input.Validate()
+	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -28,7 +56,7 @@ func CreateBook(ctx *gin.Context) {
 	book := models.Book{Title: input.Title, Author: input.Author}
 	database.DB.Create(&book)
 
-	ctx.JSON(http.StatusOK, gin.H{"data": book})
+	ctx.JSON(http.StatusOK, gin.H{"new_book": book})
 }
 
 func AllBooks(ctx *gin.Context) {
@@ -62,7 +90,7 @@ func UpdateBook(ctx *gin.Context) {
 	}
 
 	// Validate input
-	var input BookInput
+	var input updateBookInput
 	if err := ctx.ShouldBindJSON(&input); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
